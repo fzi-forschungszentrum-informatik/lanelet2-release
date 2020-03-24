@@ -1,0 +1,18 @@
+ros-melodic-lanelet2-projection (1.0.1-1bionic) bionic; urgency=high
+
+  * Make sure lanelet2 buildtool_export_depends on mrt_cmake_modules
+  * Add changelogs
+  * Contributors: Fabian Poggenhans
+
+ -- Jan-Hendrik Pauls <jan-hendrik.pauls@kit.edu>  Mon, 23 Mar 2020 23:00:00 -0000
+
+ros-melodic-lanelet2-projection (1.0.0-1bionic) bionic; urgency=high
+
+  * Bump version to 1.0
+  * Improved readmes and corrected typos
+  * Initial commit
+  * Contributors: Fabian Poggenhans
+
+ -- Jan-Hendrik Pauls <jan-hendrik.pauls@kit.edu>  Mon, 02 Mar 2020 23:00:00 -0000
+
+
