@@ -170,13 +170,13 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
   // p2area
   def("distance", +[](const ConstArea& llt, const BasicPoint3d& p) { return lg::distance3d(llt, p); });
 
-  //equals 2d
+  // equals 2d
   def("equals", boost::geometry::equals<BasicPoint2d, BasicPoint2d>);
   def("equals", boost::geometry::equals<ConstPoint2d, ConstPoint2d>);
   def("equals", boost::geometry::equals<ConstPoint2d, BasicPoint2d>);
   def("equals", boost::geometry::equals<BasicPoint2d, ConstPoint2d>);
 
-  //equals 3d
+  // equals 3d
   def("equals", boost::geometry::equals<BasicPoint3d, BasicPoint3d>);
   def("equals", boost::geometry::equals<ConstPoint3d, ConstPoint3d>);
   def("equals", boost::geometry::equals<ConstPoint3d, BasicPoint3d>);
@@ -201,6 +201,10 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
   def("boundingBox3d", boundingBox3dFor<ConstArea>);
   def("boundingBox3d", boundingBox3dFor<RegulatoryElementPtr>);
   def("boundingBox3d", boundingBox3dFor<RegulatoryElementConstPtr>);
+
+  // area
+  def("area", boost::geometry::area<BasicPolygon2d>);
+  def("area", boost::geometry::area<ConstHybridPolygon2d>);
 
   class_<ArcCoordinates>("ArcCoordinates", "Coordinates along an arc", init<>())
       .add_property("length", &ArcCoordinates::length, "lenght along arc")
@@ -236,10 +240,12 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
     return lg::intersects(utils::toHybrid(ls1), utils::toHybrid(ls2));
   });
   def("intersects2d", lg::intersects<ConstHybridPolygon2d, ConstHybridPolygon2d>);
+  def("intersects2d", lg::intersects<BoundingBox3d, BoundingBox3d>);
   def("intersects2d", lg::intersects2d<ConstLanelet, ConstLanelet>);
   def("intersects2d", lg::intersects2d<ConstArea, ConstArea>);
 
   def("intersects3d", lg::intersects3d<ConstLineString3d>);
+  def("intersects3d", lg::intersects<BoundingBox3d, BoundingBox3d>);
   def("intersects3d", lg::intersects3d<ConstHybridLineString3d>);
   def("intersects3d", lg::intersects3d<ConstLanelet, ConstLanelet>,
       "Approximates if two lanelets intersect (touch or area  >0) in 3d",
