@@ -698,7 +698,9 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
       .def("invert", &ConstLanelet::invert, "Returns inverted lanelet (flipped left/right bound, etc")
       .def("inverted", &ConstLanelet::inverted, "Returns whether this lanelet has been inverted")
       .def("polygon2d", &ConstLanelet::polygon2d, "Outline of this lanelet as 2d polygon")
-      .def("polygon3d", &ConstLanelet::polygon3d, "Outline of this lanelet as 3d polygon");
+      .def("polygon3d", &ConstLanelet::polygon3d, "Outline of this lanelet as 3d polygon")
+      .def("resetCache", &ConstLanelet::resetCache,
+           "Reset the cache. Forces update of the centerline if points have chagned");
 
   auto left = static_cast<LineString3d (Lanelet::*)()>(&Lanelet::leftBound);
   auto right = static_cast<LineString3d (Lanelet::*)()>(&Lanelet::rightBound);
@@ -873,7 +875,11 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
   implicitly_convertible<std::shared_ptr<SpeedLimit>, RegulatoryElementPtr>();
 
   class_<SpeedLimit, boost::noncopyable, std::shared_ptr<SpeedLimit>, bases<TrafficSign>>(  // NOLINT
-      "SpeedLimit", "A speed limit regulatory element", no_init);
+      "SpeedLimit", "A speed limit regulatory element", no_init)
+      .def("__init__", make_constructor(&TrafficSign::make, default_call_policies(),
+                                        (arg("id"), arg("attributes"), arg("trafficSigns"),
+                                         arg("cancellingTrafficSigns") = TrafficSignsWithType{},
+                                         arg("refLines") = LineStrings3d(), arg("cancelLines") = LineStrings3d())));
 
   class_<PrimitiveLayer<Area>, boost::noncopyable>("PrimitiveLayerArea", no_init);        // NOLINT
   class_<PrimitiveLayer<Lanelet>, boost::noncopyable>("PrimitiveLayerLanelet", no_init);  // NOLINT
@@ -913,7 +919,7 @@ BOOST_PYTHON_MODULE(PYTHON_API_MODULE_NAME) {  // NOLINT
 
   class_<LaneletSubmap, bases<LaneletMapLayers>, LaneletSubmapPtr, boost::noncopyable>(
       "LaneletSubmap", "Object for managing parts of a lanelet map", init<>("LaneletSubmap()"))
-      .def("laneletMap", +[](LaneletSubmap& self) { return self.laneletMap(); })
+      .def("laneletMap", +[](LaneletSubmap& self) { return LaneletMapPtr{self.laneletMap()}; })
       .def("add", selectSubmapAdd<Point3d>())
       .def("add", selectSubmapAdd<Lanelet>())
       .def("add", selectSubmapAdd<Area>())
