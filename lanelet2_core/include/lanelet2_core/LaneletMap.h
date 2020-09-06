@@ -1,12 +1,13 @@
 #pragma once
 
 #include <unordered_map>
-#include "Forward.h"
-#include "primitives/Area.h"
-#include "primitives/BoundingBox.h"
-#include "primitives/Lanelet.h"
-#include "primitives/RegulatoryElement.h"
-#include "utility/Utilities.h"
+
+#include "lanelet2_core/Forward.h"
+#include "lanelet2_core/primitives/Area.h"
+#include "lanelet2_core/primitives/BoundingBox.h"
+#include "lanelet2_core/primitives/Lanelet.h"
+#include "lanelet2_core/primitives/RegulatoryElement.h"
+#include "lanelet2_core/utility/Utilities.h"
 
 namespace lanelet {
 namespace internal {
@@ -562,8 +563,9 @@ using LayerPrimitiveType = typename LayerPrimitive<T>::Type;
 namespace geometry {
 /**
  * @brief returns the nearest n primitives to a point.
- * @return vector of the n closest primitives together with their distance in
+ * @return vector of the n closest primitives together with their distance in 2D space in
  * ascending order.
+ * @see findWithin2d, findWithin3d
  *
  * Other than than LaneletLayer::nearest, this returns the actually closest
  * primitives, not only the closest bounding boxes.

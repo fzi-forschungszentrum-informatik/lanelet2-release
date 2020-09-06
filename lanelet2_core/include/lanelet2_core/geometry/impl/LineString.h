@@ -1,9 +1,10 @@
 #pragma once
 #include <boost/geometry/algorithms/intersection.hpp>
-#include "../../primitives/LineString.h"
-#include "../../primitives/Traits.h"
-#include "../GeometryHelper.h"
-#include "../Point.h"
+
+#include "lanelet2_core/geometry/GeometryHelper.h"
+#include "lanelet2_core/geometry/Point.h"
+#include "lanelet2_core/primitives/LineString.h"
+#include "lanelet2_core/primitives/Traits.h"
 
 namespace lanelet {
 namespace geometry {
@@ -100,6 +101,18 @@ std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const ConstHybridLineStri
 
 std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const CompoundHybridLineString3d& l1,
                                                        const CompoundHybridLineString3d& l2);
+
+std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const ConstHybridLineString3d& l1,
+                                                       const CompoundHybridLineString3d& l2);
+
+std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const CompoundHybridLineString3d& l1,
+                                                       const ConstHybridLineString3d& l2);
+
+std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const ConstHybridLineString3d& l1, const BasicLineString3d& l2);
+
+std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const BasicLineString3d& l1, const ConstHybridLineString3d& l2);
+
+std::pair<BasicPoint3d, BasicPoint3d> projectedPoint3d(const BasicLineString3d& l1, const BasicLineString3d& l2);
 
 template <typename HybridLineStringT>
 BasicPoint2d fromArcCoords(const HybridLineStringT& hLineString, const BasicPoint2d& projStart, const size_t startIdx,
@@ -612,8 +625,8 @@ traits::BasicPointT<traits::PointType<LineStringT>> interpolatedPointAtDistance(
   double currentCumulativeLength = 0.0;
   for (auto first = lineString.begin(), second = std::next(lineString.begin()); second != lineString.end();
        ++first, ++second) {
-    const auto p1 = traits::toBasicPoint(*first);
-    const auto p2 = traits::toBasicPoint(*second);
+    auto p1 = traits::toBasicPoint(*first);
+    auto p2 = traits::toBasicPoint(*second);
     double currentLength = distance(p1, p2);
     currentCumulativeLength += currentLength;
     if (currentCumulativeLength >= dist) {
@@ -752,11 +765,12 @@ IfLS<LineString3dT, bool> intersects3d(const LineString3dT& linestring, const Li
 template <typename LineString3dT>
 IfLS<LineString3dT, std::pair<BasicPoint3d, BasicPoint3d>> projectedPoint3d(const LineString3dT& l1,
                                                                             const LineString3dT& l2) {
+  static_assert(traits::is3D<LineString3dT>(), "Please call this function with a 3D type!");
   return internal::projectedPoint3d(traits::toHybrid(l1), traits::toHybrid(l2));
 }
 
 template <typename LineString3d1T, typename LineString3d2T>
-IfLS<LineString3d1T, double> distance3d(const LineString3d1T& l1, const LineString3d2T& l2) {
+IfLS2<LineString3d1T, LineString3d2T, double> distance3d(const LineString3d1T& l1, const LineString3d2T& l2) {
   auto projPoint = internal::projectedPoint3d(traits::toHybrid(traits::to3D(l1)), traits::toHybrid(traits::to3D(l2)));
   return (projPoint.first - projPoint.second).norm();
 }
