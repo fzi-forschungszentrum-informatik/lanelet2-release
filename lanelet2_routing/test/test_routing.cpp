@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
 #include <lanelet2_core/primitives/LaneletSequence.h>
-#include <sched.h>
+
 #include <algorithm>
-#include "RoutingGraph.h"
-#include "internal/Graph.h"
-#include "internal/ShortestPath.h"
+
+#include "lanelet2_routing/RoutingGraph.h"
+#include "lanelet2_routing/internal/Graph.h"
+#include "lanelet2_routing/internal/ShortestPath.h"
 #include "test_routing_map.h"
 
 using namespace lanelet;
@@ -57,7 +58,7 @@ TEST(DijkstraSearch, onSimpleGraph) {
     return v.vertex != 4;
   });
   EXPECT_EQ(searcher.getMap().size(), boost::num_vertices(g));
-  for (auto& v : searcher.getMap()) {
+  for (const auto& v : searcher.getMap()) {
     EXPECT_EQ(v.second.predicate, v.first != 4) << v.first;
     EXPECT_EQ(v.second.isLeaf, v.first == 5 || v.first == 4) << v.first;
   }
@@ -287,6 +288,50 @@ TEST_F(GermanVehicleGraph, possiblePathsMinRoutingCosts) {  // NOLINT
   auto& firstRoute = *routes.begin();
   EXPECT_EQ(firstRoute.size(), 3ul);
   EXPECT_TRUE(containsLanelet(firstRoute, 2006));
+}
+
+TEST_F(GermanVehicleGraph, possiblePathsIncludeShorterLc) {  // NOLINT
+  auto routes = graph->possiblePaths(lanelets.at(2041), PossiblePathsParams{1000, {}, 0, true, true});
+  EXPECT_EQ(routes.size(), 3);
+  auto lastLLts = utils::transform(routes, [](auto& route) { return route.back(); });
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2062)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2049)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2048)));
+}
+
+TEST_F(GermanVehicleGraph, possiblePathsIncludeShorterAllLimitsLc) {  // NOLINT
+  auto routes = graph->possiblePaths(lanelets.at(2041), PossiblePathsParams{1000, 100, 0, true, true});
+  EXPECT_EQ(routes.size(), 3);
+  auto lastLLts = utils::transform(routes, [](auto& route) { return route.back(); });
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2062)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2049)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2048)));
+}
+
+TEST_F(GermanVehicleGraph, possiblePathsIncludeShorterNoLc) {  // NOLINT
+  auto routes = graph->possiblePaths(lanelets.at(2041), PossiblePathsParams{1000, {}, 0, false, true});
+  EXPECT_EQ(routes.size(), 3);
+  auto lastLLts = utils::transform(routes, [](auto& route) { return route.back(); });
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2063)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2049)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2047)));
+}
+
+TEST_F(GermanVehicleGraph, possiblePathsIncludeShorterAllLimitsNoLc) {  // NOLINT
+  auto routes = graph->possiblePaths(lanelets.at(2041), PossiblePathsParams{1000, 100, 0, false, true});
+  EXPECT_EQ(routes.size(), 3);
+  auto lastLLts = utils::transform(routes, [](auto& route) { return route.back(); });
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2063)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2049)));
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2047)));
+}
+
+TEST_F(GermanVehicleGraph, possiblePathsLimitLengthNoLc) {  // NOLINT
+  auto routes = graph->possiblePaths(lanelets.at(2041), PossiblePathsParams{2.5, 3, 0, false, false});
+  EXPECT_TRUE(std::all_of(routes.begin(), routes.end(), [](auto& r) { return r.size() <= 3; }));
+  EXPECT_EQ(routes.size(), 3);
+  auto lastLLts = utils::transform(routes, [](auto& route) { return route.back(); });
+  EXPECT_TRUE(has(lastLLts, lanelets.at(2042)));
 }
 
 TEST_F(GermanVehicleGraph, possiblePathsMaxHose) {  // NOLINT
