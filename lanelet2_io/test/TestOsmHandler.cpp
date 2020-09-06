@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 #include <lanelet2_core/LaneletMap.h>
 #include <lanelet2_core/primitives/BasicRegulatoryElements.h>
+
 #include <cstdio>
-#include "Io.h"
+
 #include "TestSetup.h"
-#include "io_handlers/OsmHandler.h"
+#include "lanelet2_io/Io.h"
+#include "lanelet2_io/io_handlers/OsmHandler.h"
 
 using namespace lanelet;
 
@@ -111,8 +113,8 @@ TEST(OsmHandler, writeMapWithLaneletAndAreaToFile) {  // NOLINT
   auto ll = test_setup::setUpLanelet(num);
   map->add(ar);
   map->add(ll);
-  auto filename = std::string(std::tmpnam(nullptr)) + ".osm";  // NOLINT
+  lanelet::test_setup::Tempfile file("file.osm");
   Origin origin({49, 8.4, 0});
-  write(filename, *map, origin);
-  EXPECT_NO_THROW(load(filename, origin));  // NOLINT
+  write(file.get().string(), *map, origin);
+  EXPECT_NO_THROW(load(file.get().string(), origin));  // NOLINT
 }
