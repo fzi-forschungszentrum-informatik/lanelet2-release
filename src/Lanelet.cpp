@@ -1,10 +1,12 @@
-#include "primitives/Lanelet.h"
+#include "lanelet2_core/geometry/Lanelet.h"
+
 #include <boost/geometry/algorithms/equals.hpp>
-#include "geometry/Lanelet.h"
-#include "geometry/LineString.h"
-#include "geometry/Polygon.h"
-#include "primitives/CompoundPolygon.h"
-#include "primitives/RegulatoryElement.h"
+
+#include "lanelet2_core/geometry/LineString.h"
+#include "lanelet2_core/geometry/Polygon.h"
+#include "lanelet2_core/primitives/CompoundPolygon.h"
+#include "lanelet2_core/primitives/Lanelet.h"
+#include "lanelet2_core/primitives/RegulatoryElement.h"
 
 namespace lanelet {
 namespace bg = boost::geometry;
@@ -64,7 +66,7 @@ class BoundChecker {
   }
 
   bool secondCrossesBounds(const BasicSegment2d& seg, bool left) const {
-    auto& segmentTree = left ? leftSegments_ : rightSegments_;
+    const auto& segmentTree = left ? leftSegments_ : rightSegments_;
     for (auto it = segmentTree.qbegin(bgi::intersects(seg)); it != segmentTree.qend(); ++it) {
       using boost::geometry::equals;
       if (!equals(it->first, seg.second) && !equals(it->second, seg.second)) {
