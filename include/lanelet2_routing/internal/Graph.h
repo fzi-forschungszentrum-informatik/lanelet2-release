@@ -1,12 +1,14 @@
 #pragma once
 
-#include <Forward.h>
 #include <lanelet2_core/primitives/LaneletOrArea.h>
+
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/filtered_graph.hpp>
 #include <map>
 #include <utility>
-#include "../Exceptions.h"
+
+#include "lanelet2_routing/Exceptions.h"
+#include "lanelet2_routing/Forward.h"
 
 namespace lanelet {
 namespace routing {
@@ -167,7 +169,7 @@ class Graph {
 
   //! add new lanelet to graph
   inline Vertex addVertex(const typename BaseGraphT::vertex_property_type& property) {
-    GraphType::vertex_descriptor vd;
+    GraphType::vertex_descriptor vd = 0;
     vd = boost::add_vertex(graph_);
     graph_[vd] = property;
     laneletOrAreaToVertex_.emplace(property.get(), vd);
