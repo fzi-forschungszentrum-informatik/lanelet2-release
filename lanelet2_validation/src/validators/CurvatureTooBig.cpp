@@ -1,7 +1,10 @@
-#include "validators/mapping/CurvatureTooBig.h"
+#include "lanelet2_validation/validators/mapping/CurvatureTooBig.h"
+
 #include <lanelet2_core/geometry/LineString.h>
+
 #include <iostream>
-#include "ValidatorFactory.h"
+
+#include "lanelet2_validation/ValidatorFactory.h"
 
 namespace lanelet {
 namespace validation {
@@ -11,7 +14,7 @@ RegisterMapValidator<CurvatureTooBigChecker> reg1;
 
 Issues CurvatureTooBigChecker::operator()(const LaneletMap& map) {
   Issues issues;
-  for (auto& lanelet : map.laneletLayer) {
+  for (const auto& lanelet : map.laneletLayer) {
     checkCurvature(issues, utils::to2D(lanelet.leftBound()), lanelet.id());
     checkCurvature(issues, utils::to2D(lanelet.rightBound()), lanelet.id());
   }
