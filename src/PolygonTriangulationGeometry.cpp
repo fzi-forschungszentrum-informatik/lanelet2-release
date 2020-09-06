@@ -1,5 +1,6 @@
 #include <boost/polygon/voronoi.hpp>
-#include "geometry/Polygon.h"
+
+#include "lanelet2_core/geometry/Polygon.h"
 
 using VoronoiPrecision = std::int64_t;
 
@@ -397,9 +398,9 @@ SegmentationData makeVoronoi(const BasicPolygon2d& poly) {
     curIndex = edge->cell()->source_index();
   };
   for (size_t i{0}; i < graph.num_vertices(); ++i) {
-    const auto firstEdge = graph.vertices().at(i).incident_edge();
+    const auto* const firstEdge = graph.vertices().at(i).incident_edge();
     auto startIdx = firstEdge->cell()->source_index();
-    auto curEdge = firstEdge->rot_prev();
+    const auto* curEdge = firstEdge->rot_prev();
     auto curIdx = curEdge->cell()->source_index();
     auto lastIdx = startIdx;
     IndexedPolygon curPoly{startIdx};
