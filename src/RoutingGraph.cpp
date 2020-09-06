@@ -1,4 +1,5 @@
-#include "RoutingGraph.h"
+#include "lanelet2_routing/RoutingGraph.h"
+
 #include <lanelet2_core/Attribute.h>
 #include <lanelet2_core/Exceptions.h>
 #include <lanelet2_core/LaneletMap.h>
@@ -6,23 +7,24 @@
 #include <lanelet2_core/primitives/Area.h>
 #include <lanelet2_core/primitives/Point.h>
 #include <lanelet2_traffic_rules/TrafficRules.h>
+
 #include <algorithm>
 #include <boost/graph/reverse_graph.hpp>
 #include <cassert>  // Asserts
 #include <memory>
-#include <queue>
 #include <utility>
-#include "Exceptions.h"
-#include "Forward.h"
-#include "Route.h"
-#include "internal/Graph.h"
-#include "internal/GraphUtils.h"
-#include "internal/RouteBuilder.h"
-#include "internal/RoutingGraphBuilder.h"
-#include "internal/ShortestPath.h"
+
+#include "lanelet2_routing/Exceptions.h"
+#include "lanelet2_routing/Forward.h"
+#include "lanelet2_routing/Route.h"
+#include "lanelet2_routing/internal/Graph.h"
+#include "lanelet2_routing/internal/GraphUtils.h"
+#include "lanelet2_routing/internal/RouteBuilder.h"
+#include "lanelet2_routing/internal/RoutingGraphBuilder.h"
+#include "lanelet2_routing/internal/ShortestPath.h"
 
 // needs to be included after shotestPath due to some overload resolution quirks
-#include "internal/RoutingGraphVisualization.h"
+#include "lanelet2_routing/internal/RoutingGraphVisualization.h"
 
 namespace lanelet {
 namespace routing {
@@ -207,7 +209,7 @@ struct GetGraph<false> {
 
 template <bool Backw, typename OutVertexT, typename GraphT>
 std::vector<OutVertexT> buildPath(const DijkstraSearchMap<LaneletVertexId>& map, LaneletVertexId vertex, GraphT g) {
-  auto* currInfo = &map.at(vertex);
+  const auto* currInfo = &map.at(vertex);
   auto size = currInfo->length;
   std::vector<OutVertexT> path(size);
   while (true) {
@@ -222,13 +224,49 @@ std::vector<OutVertexT> buildPath(const DijkstraSearchMap<LaneletVertexId>& map,
   return path;
 }
 
-template <bool Backw, typename OutVertexT, typename OutContainerT, typename Func>
+template <typename Cost1, typename Cost2>
+struct CombinedCost {
+  CombinedCost(const Cost1& c1, const Cost2& c2) : c1{c1}, c2{c2} {}
+  template <typename T>
+  inline bool operator()(const T& v) const {
+    return c1(v) && c2(v);
+  }
+  Cost1 c1;
+  Cost2 c2;
+};
+
+template <bool Eq = false>
+struct StopIfLaneletsMoreThan {
+  explicit StopIfLaneletsMoreThan(size_t n) : n{n} {}
+  template <typename T>
+  inline bool operator()(const T& v) const {
+    return Eq ? v.length <= n : v.length < n;
+  }
+  size_t n;
+};
+
+template <bool Eq = false>
+struct StopIfCostMoreThan {
+  explicit StopIfCostMoreThan(double c) : c{c} {}
+  template <typename T>
+  inline bool operator()(const T& v) const {
+    return Eq ? v.cost <= c : v.cost < c;
+  }
+
+  template <typename Other>
+  CombinedCost<StopIfCostMoreThan, Other> operator&&(const Other& o) {
+    return {*this, o};
+  }
+  double c;
+};
+
+template <bool Backw, bool KeepShorter, typename OutVertexT, typename OutContainerT, typename Func>
 std::vector<OutContainerT> possiblePathsImpl(const GraphType::vertex_descriptor& start,
                                              const FilteredRoutingGraph& graph, Func stopCriterion) {
   auto g = GetGraph<Backw>{}(graph);
   DijkstraStyleSearch<decltype(g)> search(g);
   search.query(start, stopCriterion);
-  auto keepPath = [&](auto& vertex) { return vertex.second.isLeaf && !vertex.second.predicate; };
+  auto keepPath = [&](auto& vertex) { return vertex.second.isLeaf && (KeepShorter || !vertex.second.predicate); };
   auto numPaths = size_t(std::count_if(search.getMap().begin(), search.getMap().end(), keepPath));
   std::vector<OutContainerT> result;
   result.reserve(numPaths);
@@ -239,6 +277,36 @@ std::vector<OutContainerT> possiblePathsImpl(const GraphType::vertex_descriptor&
     result.emplace_back(buildPath<Backw, OutVertexT>(search.getMap(), vertex.first, graph));
   }
   return result;
+}
+
+template <bool Backw, typename OutVertexT, typename OutContainerT>
+std::vector<OutContainerT> possiblePathsImpl(const GraphType::vertex_descriptor& start,
+                                             const FilteredRoutingGraph& graph, const PossiblePathsParams& params) {
+  if (params.routingCostLimit && !params.elementLimit && !params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, false, OutVertexT, OutContainerT>(start, graph,
+                                                                      StopIfCostMoreThan<>(*params.routingCostLimit));
+  }
+  if (params.routingCostLimit && !params.elementLimit && params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, true, OutVertexT, OutContainerT>(start, graph,
+                                                                     StopIfCostMoreThan<>(*params.routingCostLimit));
+  }
+  if (!params.routingCostLimit && params.elementLimit && !params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, false, OutVertexT, OutContainerT>(start, graph,
+                                                                      StopIfLaneletsMoreThan<>(*params.elementLimit));
+  }
+  if (!params.routingCostLimit && params.elementLimit && params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, true, OutVertexT, OutContainerT>(start, graph,
+                                                                     StopIfLaneletsMoreThan<>(*params.elementLimit));
+  }
+  if (params.routingCostLimit && params.elementLimit && !params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, false, OutVertexT, OutContainerT>(
+        start, graph, StopIfCostMoreThan<>(*params.routingCostLimit) && StopIfLaneletsMoreThan<>(*params.elementLimit));
+  }
+  if (params.routingCostLimit && params.elementLimit && params.includeShorterPaths) {
+    return possiblePathsImpl<Backw, true, OutVertexT, OutContainerT>(
+        start, graph, StopIfCostMoreThan<>(*params.routingCostLimit) && StopIfLaneletsMoreThan<>(*params.elementLimit));
+  }
+  throw InvalidInputError("Possible paths called with invalid cost limit AND invalid element limit!");
 }
 
 template <bool Backw, typename OutVertexT, typename Func>
@@ -256,25 +324,6 @@ std::vector<OutVertexT> reachableSetImpl(const GraphType::vertex_descriptor& sta
   }
   return result;
 }
-
-template <bool Eq = false>
-struct StopIfLaneletsMoreThan {
-  explicit StopIfLaneletsMoreThan(size_t n) : n{n} {}
-  template <typename T>
-  inline bool operator()(const T& v) const {
-    return Eq ? v.length <= n : v.length < n;
-  }
-  size_t n;
-};
-template <bool Eq = false>
-struct StopIfCostMoreThan {
-  explicit StopIfCostMoreThan(double c) : c{c} {}
-  template <typename T>
-  inline bool operator()(const T& v) const {
-    return Eq ? v.cost <= c : v.cost < c;
-  }
-  double c;
-};
 
 template <typename PathT, typename PrimT>
 Optional<PathT> shortestPathImpl(const PrimT& from, const PrimT& to, RoutingCostId routingCostId, bool withLaneChanges,
@@ -428,10 +477,10 @@ LaneletRelations RoutingGraph::previousRelations(const ConstLanelet& lanelet, bo
   return result;
 }
 
-ConstLanelets RoutingGraph::besides(const ConstLanelet& lanelet) const {
+ConstLanelets RoutingGraph::besides(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
   auto move = [](auto it) { return std::make_move_iterator(it); };
-  ConstLanelets left{lefts(lanelet)};
-  ConstLanelets right{rights(lanelet)};
+  ConstLanelets left{lefts(lanelet, routingCostId)};
+  ConstLanelets right{rights(lanelet, routingCostId)};
   ConstLanelets result;
   result.reserve(left.size() + right.size() + 1);
   result.insert(std::end(result), move(left.rbegin()), move(left.rend()));
@@ -440,45 +489,47 @@ ConstLanelets RoutingGraph::besides(const ConstLanelet& lanelet) const {
   return result;
 }
 
-Optional<ConstLanelet> RoutingGraph::left(const ConstLanelet& lanelet) const {
+Optional<ConstLanelet> RoutingGraph::left(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
   return ifLaneletInGraph(*graph_, lanelet,
-                          [this](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->left()); });
+                          [&](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->left(routingCostId)); });
 }
 
-Optional<ConstLanelet> RoutingGraph::adjacentLeft(const ConstLanelet& lanelet) const {
+Optional<ConstLanelet> RoutingGraph::adjacentLeft(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return ifLaneletInGraph(*graph_, lanelet, [&](auto& vertex) {
+    return neighboringLaneletImpl(vertex, graph_->adjacentLeft(routingCostId));
+  });
+}
+
+Optional<ConstLanelet> RoutingGraph::right(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
   return ifLaneletInGraph(*graph_, lanelet,
-                          [this](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->adjacentLeft()); });
+                          [&](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->right(routingCostId)); });
 }
 
-Optional<ConstLanelet> RoutingGraph::right(const ConstLanelet& lanelet) const {
-  return ifLaneletInGraph(*graph_, lanelet,
-                          [this](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->right()); });
+Optional<ConstLanelet> RoutingGraph::adjacentRight(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return ifLaneletInGraph(*graph_, lanelet, [&](auto& vertex) {
+    return neighboringLaneletImpl(vertex, graph_->adjacentRight(routingCostId));
+  });
 }
 
-Optional<ConstLanelet> RoutingGraph::adjacentRight(const ConstLanelet& lanelet) const {
-  return ifLaneletInGraph(*graph_, lanelet,
-                          [this](auto& vertex) { return neighboringLaneletImpl(vertex, graph_->adjacentRight()); });
+ConstLanelets RoutingGraph::lefts(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return getUntilEnd(lanelet, [&](const ConstLanelet& llt) { return left(llt, routingCostId); });
 }
 
-ConstLanelets RoutingGraph::lefts(const ConstLanelet& lanelet) const {
-  return getUntilEnd(lanelet, [this](const ConstLanelet& llt) { return left(llt); });
+ConstLanelets RoutingGraph::adjacentLefts(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return getUntilEnd(lanelet, [&](const ConstLanelet& llt) { return adjacentLeft(llt, routingCostId); });
 }
 
-ConstLanelets RoutingGraph::adjacentLefts(const ConstLanelet& lanelet) const {
-  return getUntilEnd(lanelet, [this](const ConstLanelet& llt) { return adjacentLeft(llt); });
-}
-
-LaneletRelations RoutingGraph::leftRelations(const ConstLanelet& lanelet) const {
+LaneletRelations RoutingGraph::leftRelations(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
   bool leftReached{false};
   ConstLanelet current = lanelet;
   LaneletRelations result;
   while (!leftReached) {
-    const ConstLanelets leftOf{lefts(current)};
+    const ConstLanelets leftOf{lefts(current, routingCostId)};
     for (auto const& it : leftOf) {
       result.emplace_back(LaneletRelation{it, RelationType::Left});
       current = it;
     }
-    const ConstLanelets adjacentLeftOf{adjacentLefts(current)};
+    const ConstLanelets adjacentLeftOf{adjacentLefts(current, routingCostId)};
     for (auto const& it : adjacentLeftOf) {
       result.emplace_back(LaneletRelation{it, RelationType::AdjacentLeft});
       current = it;
@@ -488,25 +539,25 @@ LaneletRelations RoutingGraph::leftRelations(const ConstLanelet& lanelet) const 
   return result;
 }
 
-ConstLanelets RoutingGraph::rights(const ConstLanelet& lanelet) const {
-  return getUntilEnd(lanelet, [this](const ConstLanelet& llt) { return right(llt); });
+ConstLanelets RoutingGraph::rights(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return getUntilEnd(lanelet, [&](const ConstLanelet& llt) { return right(llt, routingCostId); });
 }
 
-ConstLanelets RoutingGraph::adjacentRights(const ConstLanelet& lanelet) const {
-  return getUntilEnd(lanelet, [this](const ConstLanelet& llt) { return adjacentRight(llt); });
+ConstLanelets RoutingGraph::adjacentRights(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
+  return getUntilEnd(lanelet, [&](const ConstLanelet& llt) { return adjacentRight(llt, routingCostId); });
 }
 
-LaneletRelations RoutingGraph::rightRelations(const ConstLanelet& lanelet) const {
+LaneletRelations RoutingGraph::rightRelations(const ConstLanelet& lanelet, RoutingCostId routingCostId) const {
   bool rightReached{false};
   ConstLanelet current = lanelet;
   auto result = reservedVector<LaneletRelations>(3);
   while (!rightReached) {
-    const ConstLanelets rightOf{rights(current)};
+    const ConstLanelets rightOf{rights(current, routingCostId)};
     for (auto const& it : rightOf) {
       result.emplace_back(LaneletRelation{it, RelationType::Right});
       current = it;
     }
-    const ConstLanelets adjacentRightOf{adjacentRights(current)};
+    const ConstLanelets adjacentRightOf{adjacentRights(current, routingCostId)};
     for (auto const& it : adjacentRightOf) {
       result.emplace_back(LaneletRelation{it, RelationType::AdjacentRight});
       current = it;
@@ -550,69 +601,71 @@ ConstLanelets RoutingGraph::reachableSetTowards(const ConstLanelet& lanelet, dou
   return reachableSetImpl<true, ConstLanelet>(*start, graph, StopIfCostMoreThan<true>{maxRoutingCost});
 }
 
-LaneletPaths RoutingGraph::possiblePaths(const ConstLanelet& startPoint, double minRoutingCost,
-                                         RoutingCostId routingCostId, bool allowLaneChanges) const {
+LaneletPaths RoutingGraph::possiblePaths(const ConstLanelet& startPoint, const PossiblePathsParams& params) const {
   auto start = graph_->getVertex(startPoint);
   if (!start) {
     return {};
   }
-  auto graph = allowLaneChanges ? graph_->withLaneChanges(routingCostId) : graph_->withoutLaneChanges(routingCostId);
-  return possiblePathsImpl<false, ConstLanelet, LaneletPath>(*start, graph, StopIfCostMoreThan<>{minRoutingCost});
+  auto graph = params.includeLaneChanges ? graph_->withLaneChanges(params.routingCostId)
+                                         : graph_->withoutLaneChanges(params.routingCostId);
+  return possiblePathsImpl<false, ConstLanelet, LaneletPath>(*start, graph, params);
+}
+
+LaneletPaths RoutingGraph::possiblePaths(const ConstLanelet& startPoint, double minRoutingCost,
+                                         RoutingCostId routingCostId, bool allowLaneChanges) const {
+  return possiblePaths(startPoint, PossiblePathsParams{minRoutingCost, {}, routingCostId, allowLaneChanges, false});
 }
 
 LaneletPaths RoutingGraph::possiblePaths(const ConstLanelet& startPoint, uint32_t minLanelets, bool allowLaneChanges,
                                          RoutingCostId routingCostId) const {
-  auto start = graph_->getVertex(startPoint);
+  return possiblePaths(startPoint, PossiblePathsParams{{}, minLanelets, routingCostId, allowLaneChanges, false});
+}
+
+LaneletPaths RoutingGraph::possiblePathsTowards(const ConstLanelet& targetLanelet,
+                                                const PossiblePathsParams& params) const {
+  auto start = graph_->getVertex(targetLanelet);
   if (!start) {
     return {};
   }
-  auto graph = allowLaneChanges ? graph_->withLaneChanges(routingCostId) : graph_->withoutLaneChanges(routingCostId);
-  return possiblePathsImpl<false, ConstLanelet, LaneletPath>(*start, graph, StopIfLaneletsMoreThan<>{minLanelets});
+  auto graph = params.includeLaneChanges ? graph_->withLaneChanges(params.routingCostId)
+                                         : graph_->withoutLaneChanges(params.routingCostId);
+  return possiblePathsImpl<true, ConstLanelet, LaneletPath>(*start, graph, params);
 }
 
 LaneletPaths RoutingGraph::possiblePathsTowards(const ConstLanelet& targetLanelet, double minRoutingCost,
                                                 RoutingCostId routingCostId, bool allowLaneChanges) const {
-  auto start = graph_->getVertex(targetLanelet);
-  if (!start) {
-    return {};
-  }
-  auto graph = allowLaneChanges ? graph_->withLaneChanges(routingCostId) : graph_->withoutLaneChanges(routingCostId);
-  return possiblePathsImpl<true, ConstLanelet, LaneletPath>(*start, graph, StopIfCostMoreThan<>{minRoutingCost});
+  return possiblePathsTowards(targetLanelet,
+                              PossiblePathsParams{minRoutingCost, {}, routingCostId, allowLaneChanges, false});
 }
 
 LaneletPaths RoutingGraph::possiblePathsTowards(const ConstLanelet& targetLanelet, uint32_t minLanelets,
                                                 bool allowLaneChanges, RoutingCostId routingCostId) const {
-  auto start = graph_->getVertex(targetLanelet);
+  return possiblePathsTowards(targetLanelet,
+                              PossiblePathsParams{{}, minLanelets, routingCostId, allowLaneChanges, false});
+}
+
+LaneletOrAreaPaths RoutingGraph::possiblePathsIncludingAreas(const ConstLaneletOrArea& startPoint,
+                                                             const PossiblePathsParams& params) const {
+  auto start = graph_->getVertex(startPoint);
   if (!start) {
     return {};
   }
-  auto graph = allowLaneChanges ? graph_->withLaneChanges(routingCostId) : graph_->withoutLaneChanges(routingCostId);
-  return possiblePathsImpl<true, ConstLanelet, LaneletPath>(*start, graph, StopIfLaneletsMoreThan<>{minLanelets});
+  auto graph = params.includeLaneChanges ? graph_->withAreasAndLaneChanges(params.routingCostId)
+                                         : graph_->withAreasWithoutLaneChanges(params.routingCostId);
+  return possiblePathsImpl<false, ConstLaneletOrArea, LaneletOrAreaPath>(*start, graph, params);
 }
 
 LaneletOrAreaPaths RoutingGraph::possiblePathsIncludingAreas(const ConstLaneletOrArea& startPoint,
                                                              double minRoutingCost, RoutingCostId routingCostId,
                                                              bool allowLaneChanges) const {
-  auto start = graph_->getVertex(startPoint);
-  if (!start) {
-    return {};
-  }
-  auto graph = allowLaneChanges ? graph_->withAreasAndLaneChanges(routingCostId)
-                                : graph_->withAreasWithoutLaneChanges(routingCostId);
-  return possiblePathsImpl<false, ConstLaneletOrArea, LaneletOrAreaPath>(*start, graph,
-                                                                         StopIfCostMoreThan<>{minRoutingCost});
+  return possiblePathsIncludingAreas(startPoint,
+                                     PossiblePathsParams{minRoutingCost, {}, routingCostId, allowLaneChanges, false});
 }
 
 LaneletOrAreaPaths RoutingGraph::possiblePathsIncludingAreas(const ConstLaneletOrArea& startPoint, uint32_t minElements,
                                                              bool allowLaneChanges, RoutingCostId routingCostId) const {
-  auto start = graph_->getVertex(startPoint);
-  if (!start) {
-    return {};
-  }
-  auto graph = allowLaneChanges ? graph_->withAreasAndLaneChanges(routingCostId)
-                                : graph_->withAreasWithoutLaneChanges(routingCostId);
-  return possiblePathsImpl<false, ConstLaneletOrArea, LaneletOrAreaPath>(*start, graph,
-                                                                         StopIfLaneletsMoreThan<>{minElements});
+  return possiblePathsIncludingAreas(startPoint,
+                                     PossiblePathsParams{{}, minElements, routingCostId, allowLaneChanges, false});
 }
 
 void RoutingGraph::forEachSuccessor(const ConstLanelet& lanelet, const LaneletVisitFunction& f, bool allowLaneChanges,
@@ -734,7 +787,7 @@ class DebugMapBuilder {
   explicit DebugMapBuilder(const FilteredRoutingGraph& graph) : graph_{graph} {}
   LaneletMapPtr run(const internal::LaneletOrAreaToVertex& loa) {
     LaneletMapPtr output = std::make_shared<LaneletMap>();
-    for (auto& vertex : loa) {
+    for (const auto& vertex : loa) {
       visitVertex(vertex);
     }
     auto lineStrings = utils::transform(lineStringMap_, [](auto& mapLs) { return mapLs.second; });
@@ -757,7 +810,7 @@ class DebugMapBuilder {
     }
   }
 
-  LaneletOrAreaPair getPair(const ConstLaneletOrArea& first, const ConstLaneletOrArea& second) {
+  static LaneletOrAreaPair getPair(const ConstLaneletOrArea& first, const ConstLaneletOrArea& second) {
     return first.id() < second.id() ? LaneletOrAreaPair(first, second) : LaneletOrAreaPair(second, first);
   }
 
@@ -783,7 +836,6 @@ class DebugMapBuilder {
     }
   }
 
- private:
   FilteredRoutingGraph graph_;
   std::unordered_map<LaneletOrAreaPair, LineString3d> lineStringMap_;  // Stores all relations
   std::unordered_map<ConstLaneletOrArea, Point2d> pointMap_;           // Stores all 'edges'
@@ -803,9 +855,9 @@ LaneletMapPtr RoutingGraph::getDebugLaneletMap(RoutingCostId routingCostId, bool
 RoutingGraph::Errors RoutingGraph::checkValidity(bool throwOnError) const {
   Errors errors;
   for (const auto& laWithVertex : graph_->vertexLookup()) {
-    auto& la = laWithVertex.first;
+    const auto& la = laWithVertex.first;
     auto ll = laWithVertex.first.lanelet();
-    auto& vertex = laWithVertex.second;
+    const auto& vertex = laWithVertex.second;
     auto id = la.id();
     // Check left relation
     Optional<ConstLanelet> left;
