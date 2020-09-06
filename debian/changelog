@@ -1,0 +1,26 @@
+ros-noetic-lanelet2 (1.1.0-2focal) focal; urgency=high
+
+  * lanelet2 is now no longer a metapackage
+  * Include ROS2 into CI scripts
+  * Add experimental support for building with colcon on ros2 and ament_cmake
+  * Updating package.xml files to format 3.
+  * Contributors: Fabian Poggenhans, Joshua Whitley
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Sat, 05 Sep 2020 22:00:00 -0000
+
+ros-noetic-lanelet2 (1.0.1-2focal) focal; urgency=high
+
+  * Add changelogs
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Mon, 23 Mar 2020 23:00:00 -0000
+
+ros-noetic-lanelet2 (1.0.0-2focal) focal; urgency=high
+
+  * Bump version to 1.0
+  * Initial commit
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Mon, 02 Mar 2020 23:00:00 -0000
+
+
