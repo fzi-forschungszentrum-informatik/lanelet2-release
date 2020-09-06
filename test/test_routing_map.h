@@ -3,10 +3,12 @@
 #include <lanelet2_core/primitives/Point.h>
 #include <lanelet2_traffic_rules/GermanTrafficRules.h>
 #include <lanelet2_traffic_rules/TrafficRulesFactory.h>
+
 #include <memory>
 #include <utility>
-#include "Forward.h"
-#include "RoutingGraph.h"
+
+#include "lanelet2_routing/Forward.h"
+#include "lanelet2_routing/RoutingGraph.h"
 
 /// The coordinates and relations for this test can be found in "LaneletTestMap.xml" which can be viewed in
 /// https://www.draw.io
@@ -15,10 +17,10 @@ namespace routing {
 namespace tests {
 
 inline RoutingGraphPtr setUpGermanVehicleGraph(LaneletMap& map, double laneChangeCost = 2.,
-                                               double participantHeight = 2.) {
+                                               double participantHeight = 2., double minLaneChangeLength = 0.) {
   traffic_rules::TrafficRulesPtr trafficRules{traffic_rules::TrafficRulesFactory::create(
       Locations::Germany, Participants::Vehicle, traffic_rules::TrafficRules::Configuration())};
-  RoutingCostPtrs costPtrs{std::make_shared<RoutingCostDistance>(laneChangeCost),
+  RoutingCostPtrs costPtrs{std::make_shared<RoutingCostDistance>(laneChangeCost, minLaneChangeLength),
                            std::make_shared<RoutingCostTravelTime>(laneChangeCost)};
   RoutingGraph::Configuration configuration;
   configuration.insert(std::make_pair(RoutingGraph::ParticipantHeight, participantHeight));
@@ -387,7 +389,7 @@ class RoutingGraphTestData {
     addLine({points.at(129), points.at(131)});  // ls1215
     addLine({points.at(130), points.at(42)});   // ls1216
     lines.at(1205).setAttribute(AttributeName::Type, AttributeValueString::LineThin);
-    lines.at(1205).setAttribute(AttributeName::Type, AttributeValueString::Dashed);
+    lines.at(1205).setAttribute(AttributeName::Subtype, AttributeValueString::Dashed);
   }
   void initLanelets() {
     lanelets.clear();
