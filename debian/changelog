@@ -1,0 +1,33 @@
+ros-noetic-lanelet2 (1.1.1-1buster) buster; urgency=high
+
+  * Add missing dependency to ros_environment
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Mon, 14 Sep 2020 00:00:00 -0000
+
+ros-noetic-lanelet2 (1.1.0-1buster) buster; urgency=high
+
+  * lanelet2 is now no longer a metapackage
+  * Include ROS2 into CI scripts
+  * Add experimental support for building with colcon on ros2 and ament_cmake
+  * Updating package.xml files to format 3.
+  * Contributors: Fabian Poggenhans, Joshua Whitley
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Sun, 06 Sep 2020 00:00:00 -0000
+
+ros-noetic-lanelet2 (1.0.1-1buster) buster; urgency=high
+
+  * Add changelogs
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Tue, 24 Mar 2020 00:00:00 -0000
+
+ros-noetic-lanelet2 (1.0.0-1buster) buster; urgency=high
+
+  * Bump version to 1.0
+  * Initial commit
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Tue, 03 Mar 2020 00:00:00 -0000
+
+
