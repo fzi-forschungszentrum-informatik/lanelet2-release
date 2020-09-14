@@ -1,1 +1,1 @@
-{"trim": "", "base": "923a9cf", "trimbase": "", "parent": "debian/noetic/lanelet2_python", "previous": "b3d39cb"}
+{"base": "cff1ff5", "parent": "debian/noetic/lanelet2_python", "previous": "d17650e", "trim": "", "trimbase": ""}
