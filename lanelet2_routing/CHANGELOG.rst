@@ -2,6 +2,9 @@
 Changelog for package lanelet2_routing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (2020-09-14)
+------------------
+
 1.1.0 (2020-09-06)
 ------------------
 * Implement more flexible configuration for obtaining possible paths. Still lacking proper tests
