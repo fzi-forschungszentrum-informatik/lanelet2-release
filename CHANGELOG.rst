@@ -2,6 +2,9 @@
 Changelog for package lanelet2_python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (2020-09-14)
+------------------
+
 1.1.0 (2020-09-06)
 ------------------
 * Add parameter to left/right/adjacentLeft/adjacentRight so that they can be queried based on routing cost id
