@@ -2,6 +2,9 @@
 Changelog for package lanelet2_maps
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.1 (2020-09-14)
+------------------
+
 1.1.0 (2020-09-06)
 ------------------
 * Add experimental support for building with colcon on ros2 and ament_cmake
