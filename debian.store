@@ -1,1 +1,1 @@
-{"trim": "", "base": "38fc84d", "trimbase": "", "parent": "debian/noetic/lanelet2_traffic_rules", "previous": "b94b5bc"}
+{"base": "3276c2a", "parent": "debian/noetic/lanelet2_traffic_rules", "previous": "d214454", "trim": "", "trimbase": ""}
