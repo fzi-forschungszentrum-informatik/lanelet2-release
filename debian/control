@@ -1,0 +1,12 @@
+Source: ros-eloquent-lanelet2-maps
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-eloquent-ament-cmake-core, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-lanelet2-maps
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-eloquent-lanelet2-core, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Description: Example maps in the lanelet2-format
