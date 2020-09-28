@@ -1,0 +1,12 @@
+Source: ros-eloquent-lanelet2-core
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libboost-all-dev, libeigen3-dev, libgtest-dev, ros-eloquent-ament-cmake-core, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-lanelet2-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev, libeigen3-dev, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Description: Lanelet2 core module
