@@ -1,0 +1,12 @@
+Source: ros-eloquent-lanelet2-traffic-rules
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libgtest-dev, ros-eloquent-ament-cmake-core, ros-eloquent-lanelet2-core, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-eloquent-lanelet2-traffic-rules
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-eloquent-lanelet2-core, ros-eloquent-mrt-cmake-modules, ros-eloquent-ros-workspace
+Description: Package for interpreting traffic rules in a lanelet map
