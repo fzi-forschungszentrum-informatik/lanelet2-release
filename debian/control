@@ -1,0 +1,12 @@
+Source: ros-dashing-lanelet2
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-dashing-ament-cmake-core, ros-dashing-ros-environment, ros-dashing-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-dashing-lanelet2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-dashing-lanelet2-core, ros-dashing-lanelet2-examples, ros-dashing-lanelet2-io, ros-dashing-lanelet2-maps, ros-dashing-lanelet2-projection, ros-dashing-lanelet2-python, ros-dashing-lanelet2-routing, ros-dashing-lanelet2-traffic-rules, ros-dashing-lanelet2-validation, ros-dashing-ros-workspace
+Description: Meta-package for lanelet2
