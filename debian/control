@@ -1,0 +1,12 @@
+Source: ros-foxy-lanelet2-python
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libboost-python-dev, libgtest-dev, ros-foxy-ament-cmake-core, ros-foxy-lanelet2-core, ros-foxy-lanelet2-io, ros-foxy-lanelet2-projection, ros-foxy-lanelet2-routing, ros-foxy-lanelet2-traffic-rules, ros-foxy-mrt-cmake-modules, ros-foxy-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-foxy-lanelet2-python
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-python-dev, ros-foxy-lanelet2-core, ros-foxy-lanelet2-io, ros-foxy-lanelet2-projection, ros-foxy-lanelet2-routing, ros-foxy-lanelet2-traffic-rules, ros-foxy-mrt-cmake-modules, ros-foxy-ros-workspace
+Description: Python bindings for lanelet2
