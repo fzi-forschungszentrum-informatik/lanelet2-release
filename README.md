@@ -1,3 +1,36 @@
+## lanelet2 (galactic) - 1.1.1-1
+
+The packages in the `lanelet2` repository were released into the `galactic` distro by running `/usr/bin/bloom-release lanelet2 --rosdistro galactic` on `Sat, 31 Jul 2021 14:43:00 -0000`
+
+These packages were released:
+- `lanelet2`
+- `lanelet2_core`
+- `lanelet2_examples`
+- `lanelet2_io`
+- `lanelet2_maps`
+- `lanelet2_projection`
+- `lanelet2_python`
+- `lanelet2_routing`
+- `lanelet2_traffic_rules`
+- `lanelet2_validation`
+
+Version of package(s) in repository `lanelet2`:
+
+- upstream repository: https://github.com/fzi-forschungszentrum-informatik/lanelet2.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `null`
+- new version: `1.1.1-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.23`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## lanelet2 (foxy) - 1.1.1-1
 
 The packages in the `lanelet2` repository were released into the `foxy` distro by running `/usr/bin/bloom-release lanelet2 --rosdistro foxy` on `Fri, 02 Oct 2020 08:59:19 -0000`
