@@ -1,0 +1,38 @@
+ros-galactic-lanelet2-maps (1.1.1-1focal) focal; urgency=high
+
+
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Sun, 13 Sep 2020 22:00:00 -0000
+
+ros-galactic-lanelet2-maps (1.1.0-1focal) focal; urgency=high
+
+  * Add experimental support for building with colcon on ros2 and ament_cmake
+  * Updating package.xml files to format 3.
+  * Contributors: Fabian Poggenhans, Joshua Whitley
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Sat, 05 Sep 2020 22:00:00 -0000
+
+ros-galactic-lanelet2-maps (1.0.1-1focal) focal; urgency=high
+
+  * Make sure lanelet2 buildtool_export_depends on mrt_cmake_modules
+  * Add changelogs
+  * Contributors: Fabian Poggenhans
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Mon, 23 Mar 2020 23:00:00 -0000
+
+ros-galactic-lanelet2-maps (1.0.0-1focal) focal; urgency=high
+
+  * Bump version to 1.0
+  * Improve presets and lanelet visualization
+  * added swedish traffic signs
+  * Clean up JOSM style sheet
+  * Add US traffic signs to JOSM stylesheet and docu
+  * Improve documentation on how traffic lights/signs should be mapped
+  * Add documentation
+  * Fix example map
+  * Initial commit
+  * Contributors: Fabian Poggenhans, Lingguang Wang, Maximilian Naumann
+
+ -- Fabian Poggenhans <fabian.poggenhans@kit.edu>  Mon, 02 Mar 2020 23:00:00 -0000
+
+
