@@ -1,0 +1,12 @@
+Source: ros-galactic-lanelet2
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-galactic-ament-cmake-core, ros-galactic-ros-environment, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-lanelet2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-galactic-lanelet2-core, ros-galactic-lanelet2-examples, ros-galactic-lanelet2-io, ros-galactic-lanelet2-maps, ros-galactic-lanelet2-projection, ros-galactic-lanelet2-python, ros-galactic-lanelet2-routing, ros-galactic-lanelet2-traffic-rules, ros-galactic-lanelet2-validation, ros-galactic-ros-workspace
+Description: Meta-package for lanelet2
