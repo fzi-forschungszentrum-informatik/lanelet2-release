@@ -1,0 +1,12 @@
+Source: ros-rolling-lanelet2-io
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libboost-all-dev, libgtest-dev, libpugixml-dev, ros-rolling-ament-cmake-core, ros-rolling-lanelet2-core, ros-rolling-mrt-cmake-modules, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-lanelet2-io
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev, libpugixml-dev, ros-rolling-lanelet2-core, ros-rolling-mrt-cmake-modules, ros-rolling-ros-workspace
+Description: Parser/Writer module for lanelet2
