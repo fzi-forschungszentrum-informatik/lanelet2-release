@@ -1,0 +1,12 @@
+Source: ros-galactic-lanelet2-core
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libboost-all-dev, libeigen3-dev, libgtest-dev, ros-galactic-ament-cmake-core, ros-galactic-mrt-cmake-modules, ros-galactic-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-galactic-lanelet2-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev, libeigen3-dev, ros-galactic-mrt-cmake-modules, ros-galactic-ros-workspace
+Description: Lanelet2 core module
