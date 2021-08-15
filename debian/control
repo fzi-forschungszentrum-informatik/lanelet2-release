@@ -1,0 +1,12 @@
+Source: ros-rolling-lanelet2
+Section: misc
+Priority: optional
+Maintainer: Fabian Poggenhans <fabian.poggenhans@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), ros-rolling-ament-cmake-core, ros-rolling-ros-environment, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-lanelet2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-rolling-lanelet2-core, ros-rolling-lanelet2-examples, ros-rolling-lanelet2-io, ros-rolling-lanelet2-maps, ros-rolling-lanelet2-projection, ros-rolling-lanelet2-python, ros-rolling-lanelet2-routing, ros-rolling-lanelet2-traffic-rules, ros-rolling-lanelet2-validation, ros-rolling-ros-workspace
+Description: Meta-package for lanelet2
