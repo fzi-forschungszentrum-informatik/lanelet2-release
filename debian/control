@@ -1,0 +1,12 @@
+Source: ros-rolling-lanelet2-projection
+Section: misc
+Priority: optional
+Maintainer: Jan-Hendrik Pauls <jan-hendrik.pauls@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libgeographic-dev, libgtest-dev, ros-rolling-ament-cmake-core, ros-rolling-lanelet2-io, ros-rolling-mrt-cmake-modules, ros-rolling-ros-workspace
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-rolling-lanelet2-projection
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libgeographic-dev, ros-rolling-lanelet2-io, ros-rolling-mrt-cmake-modules, ros-rolling-ros-workspace
+Description: Lanelet2 projection library for lat/lon to local x/y conversion
