@@ -1,0 +1,12 @@
+Source: ros-noetic-lanelet2-matching
+Section: misc
+Priority: optional
+Maintainer: Fabian Immel <fabian.immel@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), mrt-googletest <!nocheck>, mrt-ros-focal, ros-noetic-lanelet2-core, ros-noetic-lanelet2-io <!nocheck>, ros-noetic-lanelet2-maps <!nocheck>, ros-noetic-lanelet2-projection <!nocheck>, ros-noetic-lanelet2-traffic-rules
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-lanelet2-matching
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, mrt-ros-focal, ros-noetic-lanelet2-core, ros-noetic-lanelet2-traffic-rules
+Description: Library to match objects to lanelets
