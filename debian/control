@@ -1,0 +1,12 @@
+Source: ros-noetic-lanelet2-core
+Section: misc
+Priority: optional
+Maintainer: Fabian Immel <fabian.immel@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), libboost-all-dev, libeigen3-dev, mrt-googletest <!nocheck>, mrt-ros-focal
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-lanelet2-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libboost-all-dev, libeigen3-dev, mrt-ros-focal
+Description: Lanelet2 core module
