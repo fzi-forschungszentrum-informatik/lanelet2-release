@@ -1,0 +1,12 @@
+Source: ros-noetic-lanelet2-traffic-rules
+Section: misc
+Priority: optional
+Maintainer: Fabian Immel <fabian.immel@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), mrt-googletest <!nocheck>, mrt-ros-focal, ros-noetic-lanelet2-core
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-lanelet2-traffic-rules
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, mrt-ros-focal, ros-noetic-lanelet2-core
+Description: Package for interpreting traffic rules in a lanelet map
