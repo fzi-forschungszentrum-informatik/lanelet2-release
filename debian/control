@@ -1,0 +1,12 @@
+Source: ros-noetic-lanelet2
+Section: misc
+Priority: optional
+Maintainer: Fabian Immel <fabian.immel@kit.edu>
+Build-Depends: debhelper (>= 9.0.0), mrt-ros-focal
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-noetic-lanelet2
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-noetic-lanelet2-core, ros-noetic-lanelet2-examples, ros-noetic-lanelet2-io, ros-noetic-lanelet2-maps, ros-noetic-lanelet2-matching, ros-noetic-lanelet2-projection, ros-noetic-lanelet2-python, ros-noetic-lanelet2-routing, ros-noetic-lanelet2-traffic-rules, ros-noetic-lanelet2-validation
+Description: Meta-package for lanelet2
