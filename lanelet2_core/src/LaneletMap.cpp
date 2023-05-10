@@ -2,6 +2,8 @@
 #include "lanelet2_core/LaneletMap.h"
 
 #include <atomic>
+#include <boost/geometry/algorithms/disjoint.hpp>  //used but not included by rtree
+#include <boost/geometry/algorithms/equals.hpp>    //used but not included by rtree
 #include <boost/geometry/index/rtree.hpp>
 #include <chrono>
 #include <random>
@@ -825,6 +827,10 @@ LaneletMapUPtr createMap(const Lanelets& fromLanelets, const Areas& fromAreas) {
   for (auto ll : fromLanelets) {
     ls.push_back(ll.leftBound());
     ls.push_back(ll.rightBound());
+    if (ll.hasCustomCenterline()) {
+      auto center = ll.centerline();
+      ls.emplace_back(std::const_pointer_cast<LineStringData>(center.constData()), center.inverted());
+    }
   }
   auto appendMultiLs = [&ls](auto& lsappend) {
     std::for_each(lsappend.begin(), lsappend.end(), [&ls](auto& l) { ls.push_back(l); });
