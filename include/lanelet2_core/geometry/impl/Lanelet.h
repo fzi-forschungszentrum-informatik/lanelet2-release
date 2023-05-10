@@ -16,8 +16,8 @@ namespace geometry {
 namespace internal {
 template <typename T>
 struct GetGeometry<T, IfLL<T, void>> {
-  static inline auto twoD(const T& geometry) { return traits::toHybrid(geometry.polygon2d()); }
-  static inline auto threeD(const T& geometry) { return traits::toHybrid(geometry.polygon3d()); }
+  static inline auto twoD(const T& geometry) { return geometry.polygon2d().basicPolygon(); }
+  static inline auto threeD(const T& geometry) { return geometry.polygon3d().basicPolygon(); }
 };
 }  // namespace internal
 
@@ -92,7 +92,6 @@ IfLL<Lanelet1T, bool> overlaps2d(const Lanelet1T& lanelet, const Lanelet2T& othe
 template <typename Lanelet1T, typename Lanelet2T>
 BasicPoints2d intersectCenterlines2d(const Lanelet1T& lanelet, const Lanelet2T& otherLanelet,
                                      std::vector<double>* distanceThis, std::vector<double>* distanceOther) {
-  //! @todo implement intersect_centerlines
   BasicPoints2d intersections;
   const auto centerline = traits::toHybrid(lanelet.centerline2d());
   const auto otherCenterline = traits::toHybrid(otherLanelet.centerline2d());
