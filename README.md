@@ -1,8 +1,17 @@
 # Lanelet2
 
-| [Travis CI](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2) | Gitlab CI | Coverage |
-| --------- | --------- | -------- |
-| [![](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2.svg?branch=master)](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2) | ![build](https://www.mrt.kit.edu/z/gitlab/lanelet2/pipeline.svg) | ![coverage](https://www.mrt.kit.edu/z/gitlab/lanelet2/coverage.svg) |
+[![CI](https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/ci.yaml/badge.svg)](
+https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/ci.yaml)
+[![CD](https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/cd.yaml/badge.svg)](
+https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/cd.yaml)
+[![Build Status ROS focal/noetic](https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild/badge/icon?subject=ROS%20noetic%20%28on%20focal%29)](
+https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild/)
+[![Build Status ROS2 focal/foxy](https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild/badge/icon?subject=ROS2%20foxy%20%28on%20focal%29)](
+https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild/)
+[![Build Status ROS2 jammy/humble](https://build.ros2.org/job/Hdev__lanelet2__ubuntu_jammy_amd64/lastBuild/badge/icon?subject=ROS2%20humble%20%28on%20jammy%29)](
+https://build.ros2.org/job/Hdev__lanelet2__ubuntu_jammy_amd64/lastBuild/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/lanelet2.svg?label=PyPI%20downloads)](
+https://pypi.org/project/lanelet2/)
 
 ## Overview
 
@@ -36,6 +45,35 @@ You can find more documentation in the individual packages and in doxygen commen
 - To get more information on how to create valid maps, see [here](lanelet2_maps/README.md).
 
 ## Installation
+
+### Within ROS
+Lanelet2 has been released for ROS. Just install `ros-[distribution]-lanelet2`, e.g.:
+```
+sudo apt install ros-noetic-lanelet2
+```
+
+### Without ROS
+Outside of ROS, Lanelet2 can be installed from PyPI. Note that currently only Python 3.8-3.11 linux builds are available and that Python 3.10+ is only supported for recent linux distributions such as Ubuntu 20.04+.
+```
+pip install lanelet2
+```
+#### Note:
+
+If you receive the error
+
+```
+ERROR: Could not find a version that satisfies the requirement lanelet2 (from versions: none)
+ERROR: No matching distribution found for lanelet2
+```
+
+during installation, even when using e.g. python 3.9 or 3.8 on a somewhat recent linux such as Ubuntu 18.04 or newer, your pip version is probably too old, 
+as e.g. the pip version that comes with apt on Ubuntu 20.04 (20.0.2) is not recent enough for the provided package.
+
+In this case you need to simply update pip with 
+
+```
+pip3 install -U pip 
+```
 
 ### Using Docker
 
@@ -93,14 +131,15 @@ cd ..
 catkin build
 ```
 
-If unsure, see the [Dockerfile](Dockerfile) or the [travis build log](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2). It shows the the full installation process, with subsequent build and test based on a docker image with a clean ubuntu installation.
+If unsure, see the [Dockerfile](Dockerfile) or the [travis build log](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2). It shows the full installation process, with subsequent build and test based on a docker image with a clean Ubuntu installation.
 
 ### Manual, experimental installation using conan
-For non-catkin users, we also offer a conan based install proces. Its experimental and might not work on all platforms, expecially Windows.
-Since conan handles installing all the dependencies, all you need is a cloned repository and conan itself:
+For non-catkin users, we also offer a conan based install process. Its experimental and might not work on all platforms, especially Windows.
+Since conan handles installing all C++ dependencies, all you need is a cloned repository, conan itself and a few python dependencies:
 ```bash
-pip install conan catkin_pkg
-conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan # requried for python bindings
+pip install conan catkin_pkg numpy
+conan remote add bincrafters https://bincrafters.jfrog.io/artifactory/api/conan/public-conan # required for python bindings
+conan config set general.revisions_enabled=1 # requried to use bincrafters remote
 git clone https://github.com/fzi-forschungszentrum-informatik/lanelet2.git
 cd lanelet2
 ```
@@ -108,9 +147,9 @@ cd lanelet2
 From here, just use the default conan build/install procedure, e.g.:
 ```bash
 conan source .
-conan create . lanelet2/stable --build=missing --options shared=True
+conan create . lanelet2/stable --build=missing
 ```
-The `shared=True` part is important, because otherwise the lanelet2's plugin mechanisms will fail. E.g. loading maps will not be possible.
+Different from the conan defaults, we build lanelet2 and boost as shared libraries, because otherwise the lanelet2's plugin mechanisms as well as boost::python will fail. E.g. loading maps will not be possible and the python API will not be usable.
 
 To be able to use the python bindings, you have to make conan export the PYTHONPATH for lanelet2:
 ```bash
@@ -122,7 +161,7 @@ source deactivate.sh
 
 ### Python3
 
-The python bindings are build for your default python installation by default (which currently is python2 on most systems). To build for python3 instead of python2, create a python3 virtualenv before initializing the workspace with `catkin init`. The command `python` should point to `python3`. 
+The python bindings are build for your default python installation by default (which currently is python2 on most systems). To build for python3 instead of python2, create a python3 virtualenv before initializing the workspace with `catkin init`. The command `python` should point to `python3`.
 
 After `catkin init` run `catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_VERSION=3.6` to make sure that the correct python version is used. Then build and use as usual.
 
@@ -139,6 +178,7 @@ Examples and common use cases in both C++ and Python can be found [here](lanelet
 * **lanelet2_projection** for projecting maps from WGS84 (lat/lon) to local metric coordinates
 * **lanelet2_routing** implements the routing graph for routing or reachable set or queries as well as collision checking
 * **lanelet2_maps** provides example maps and functionality to visualize and modify them easily in JOSM
+* **lanelet2_matching** provides functions to determine in which lanelet an object is/could be currently located
 * **lanelet2_python** implements the python interface for lanelet2
 * **lanelet2_validation** provides checks to ensure a valid lanelet2 map
 * **lanelet2_examples** contains tutorials for working with Lanelet2 in C++ and Python
@@ -158,5 +198,4 @@ If you are using Lanelet2 for scientific research, we would be pleased if you wo
   Url={http://www.mrt.kit.edu/z/publ/download/2018/Poggenhans2018Lanelet2.pdf}
 }
 ```
-
 
