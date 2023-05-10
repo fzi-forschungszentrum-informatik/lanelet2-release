@@ -1,8 +1,17 @@
 # Lanelet2
 
-| [ROS focal/noetic](https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild) | [ROS focal/foxy](https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild) | Gitlab CI | Coverage |
-| --------- | --------- | -------- | -------- |
-| [![](https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild/badge/icon)](https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild) | [![](https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild//badge/icon)](https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild) | ![build](https://www.mrt.kit.edu/z/gitlab/lanelet2/pipeline.svg) | ![coverage](https://www.mrt.kit.edu/z/gitlab/lanelet2/coverage.svg) |
+[![CI](https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/ci.yaml/badge.svg)](
+https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/ci.yaml)
+[![CD](https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/cd.yaml/badge.svg)](
+https://github.com/fzi-forschungszentrum-informatik/lanelet2/actions/workflows/cd.yaml)
+[![Build Status ROS focal/noetic](https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild/badge/icon?subject=ROS%20noetic%20%28on%20focal%29)](
+https://build.ros.org/job/Ndev__lanelet2__ubuntu_focal_amd64/lastBuild/)
+[![Build Status ROS2 focal/foxy](https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild/badge/icon?subject=ROS2%20foxy%20%28on%20focal%29)](
+https://build.ros2.org/job/Fdev__lanelet2__ubuntu_focal_amd64/lastBuild/)
+[![Build Status ROS2 jammy/humble](https://build.ros2.org/job/Hdev__lanelet2__ubuntu_jammy_amd64/lastBuild/badge/icon?subject=ROS2%20humble%20%28on%20jammy%29)](
+https://build.ros2.org/job/Hdev__lanelet2__ubuntu_jammy_amd64/lastBuild/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/lanelet2.svg?label=PyPI%20downloads)](
+https://pypi.org/project/lanelet2/)
 
 ## Overview
 
@@ -41,6 +50,29 @@ You can find more documentation in the individual packages and in doxygen commen
 Lanelet2 has been released for ROS. Just install `ros-[distribution]-lanelet2`, e.g.:
 ```
 sudo apt install ros-noetic-lanelet2
+```
+
+### Without ROS
+Outside of ROS, Lanelet2 can be installed from PyPI. Note that currently only Python 3.8-3.11 linux builds are available and that Python 3.10+ is only supported for recent linux distributions such as Ubuntu 20.04+.
+```
+pip install lanelet2
+```
+#### Note:
+
+If you receive the error
+
+```
+ERROR: Could not find a version that satisfies the requirement lanelet2 (from versions: none)
+ERROR: No matching distribution found for lanelet2
+```
+
+during installation, even when using e.g. python 3.9 or 3.8 on a somewhat recent linux such as Ubuntu 18.04 or newer, your pip version is probably too old, 
+as e.g. the pip version that comes with apt on Ubuntu 20.04 (20.0.2) is not recent enough for the provided package.
+
+In this case you need to simply update pip with 
+
+```
+pip3 install -U pip 
 ```
 
 ### Using Docker
@@ -166,5 +198,4 @@ If you are using Lanelet2 for scientific research, we would be pleased if you wo
   Url={http://www.mrt.kit.edu/z/publ/download/2018/Poggenhans2018Lanelet2.pdf}
 }
 ```
-
 
