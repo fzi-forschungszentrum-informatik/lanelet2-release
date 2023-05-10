@@ -1,1 +1,1 @@
-{"trim": "", "base": "0f17553", "trimbase": "", "parent": "debian/foxy/lanelet2_core", "previous": "f792c9c"}
+{"base": "c1cf7a1", "parent": "debian/foxy/lanelet2_core", "previous": "e940d25", "trim": "", "trimbase": ""}
