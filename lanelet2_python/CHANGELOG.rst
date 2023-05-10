@@ -2,6 +2,44 @@
 Changelog for package lanelet2_python
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.1 (2023-05-10)
+------------------
+* Improve python core module (`#293 <https://github.com/immel-f/Lanelet2/issues/293>`_)
+  Improve lanelet2.core python wrappers
+  add docstrings, named arguments and __repr_\_ methods to core primitives in python, fix bugs and add more initialization options
+  ---------
+  Co-authored-by: Fabian Poggenhans <fabian.poggenhans@partner.kit.edu>
+* Add readme to PyPi package description and fix readme icons (`#283 <https://github.com/immel-f/Lanelet2/issues/283>`_)
+* Build lanelet2 wheel and publish in GH release and PyPI (`#278 <https://github.com/immel-f/Lanelet2/issues/278>`_)
+* Contributors: Jan Rudolph, immel-f, poggenhans
+
+1.2.0 (2023-01-30)
+------------------
+* Fix OSM file output for upload and elevation (`#245 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/245>`_)
+  * discourage upload and format elevation to max 2 decimals to prevent JSOM excessive elevation precision errors
+  * remove width to prevent leading spaces for lat/lon/ele
+  * allow for providing parameters josm_prevent_upload and josm_format_elevation to write
+  * Test lat/lon/ele formatting with and without josm_format_elevation. Test josm_upload
+  * improve read/write tutorial section comments
+  * document params
+* add Geocentric and Local Cartesian projectors (`#244 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/244>`_)
+* Fix 223 all way stop python (`#231 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/231>`_)
+* Add CI using GitHub Actions (`#256 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/256>`_)
+* Added pointer declaration for code quality issues
+* Add a test case for GeometryApi to increase coverage
+* Pass reference of const qualified parameter
+* Add required boost::geometry functionalities to pyapi
+* Add fromArcCoordinates() function to pyapi
+* Python: Add basicPoint method to ConstPoint2d
+  closes `fzi-forschungszentrum-informatik/Lanelet2#192 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/192>`_
+* Switch to lanelet2.matching in python
+* Move python bindings of lanelet2_matching to lanelet2_python
+* Python: Fix find usages for const objects
+  closes `fzi-forschungszentrum-informatik/lanelet2#168 <https://github.com/fzi-forschungszentrum-informatik/lanelet2/issues/168>`_
+* Python api: fix getter of Area.outerBound
+  closes `fzi-forschungszentrum-informatik/Lanelet2#152 <https://github.com/fzi-forschungszentrum-informatik/Lanelet2/issues/152>`_
+* Contributors: Fabian, Fabian Poggenhans, Frank Bieder, Maximilian Naumann, Michał Antkiewicz, Sahin Tas, bieder, Fabian Immel
+
 1.1.1 (2020-09-14)
 ------------------
 
