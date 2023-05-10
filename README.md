@@ -1,243 +1,162 @@
-# Lanelet2 routing
+# Lanelet2
 
-The routing module for lanelet2.
+| [Travis CI](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2) | Gitlab CI | Coverage |
+| --------- | --------- | -------- |
+| [![](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2.svg?branch=master)](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2) | ![build](https://www.mrt.kit.edu/z/gitlab/lanelet2/pipeline.svg) | ![coverage](https://www.mrt.kit.edu/z/gitlab/lanelet2/coverage.svg) |
 
-For a short version of this you can also look at [the presentation](https://htmlpreview.github.io/?https://github.com/fzi-forschungszentrum-informatik/Lanelet2/blob/master/lanelet2_routing/doc/lanelet2_routing.html). If some images do not render correctly, please clone the repository and open the html file in your browser.
+## Overview
 
-This readme covers some basics. The API offers more than that.
+Lanelet2 is a C++ library for handling map data in the context of automated driving. It is designed to utilize high-definition map data in order to efficiently handle the challenges posed to a vehicle in complex traffic scenarios. Flexibility and extensibility are some of the core principles to handle the upcoming challenges of future maps.
 
-# 1. Components and Vocabulary
-## How to create a Routing Graph
-![](doc/images/components.png)
+Features:
+- **2D and 3D** support
+- **Consistent modification**: if one point is modified, all owning objects see the change
+- Supports **lane changes**, routing through areas, etc.
+- **Separated routing** for pedestrians, vehicles, bikes, etc.
+- Many **customization points** to add new traffic rules, routing costs, parsers, etc.
+- **Simple convenience functions** for common tasks when handling maps
+- **Accurate Projection** between the lat/lon geographic world and local metric coordinates
+- **IO Interface** for reading and writing e.g. _osm_ data formats (this does not mean it can deal with _osm maps_)
+- **Python** bindings for the whole C++ interface
+- **Boost Geometry** support for all thinkable kinds of geometry calculations on map primitives
+- Released under the [**BSD 3-Clause license**](LICENSE)
+- Support for **ROS1, ROS2, Docker and Conan** (see instructions below)
 
-The needed components to create a routing graph are:
+![](lanelet2_core/doc/images/lanelet2_example_image.png)
 
-**Routing Cost Modules:**
-* They generically determine the routing cost for travelling along a lanelet/area
-* Can be e.g. length, travel time
-* You can dynamically select between them when querying the routing graph
-* **You can easily plug in your own routing cost calculation**
-* *Influences the prefered path*
+Lanelet2 is the successor of the old [liblanelet](https://github.com/phbender/liblanelet/tree/master/libLanelet) that was developed in 2013. If you know Lanelet1, you might be interested in [reading this](lanelet2_core/doc/Lanelet1Compability.md).
 
-**Traffic Rules for a Specific Participant** (see [lanelet2_traffic_rules](../lanelet2_traffic_rules/README.md))
-* Determines which lanelets/areas are passable
-* *Influences the possible paths*
+## Documentation
 
-**Lanelet Map:** (see [lanelet2_core](../lanelet2_core/README.md))
-* Map with Lanelets, Areas, Regulatory Elements, ...
+You can find more documentation in the individual packages and in doxygen comments. Here is an overview on the most important topics:
+- [Here](lanelet2_core/doc/LaneletPrimitives.md) is more information on the basic primitives that make up a Lanelet2 map.
+- [Read here](lanelet2_core/doc/Architecture.md) for a primer on the **software architecture** of lanelet2.
+- There is also some [documentation](lanelet2_core/doc/GeometryPrimer.md) on the geometry calculations you can do with lanelet2 primitives.
+- If you are interested in Lanelet2's **projections**, you will find more [here](lanelet2_projection/doc/Map_Projections_Coordinate_Systems.md).
+- To get more information on how to create valid maps, see [here](lanelet2_maps/README.md).
 
-## Relations
-Lanelets that are part of a routing graph can have relations to each other:
-![](doc/images/max-hose.png)
+## Installation
 
-The possible relations are:
-    * `left`, `right` (reachable via lane change)
-    * `adjacent left`, `adjacent right` (lanelets that are neighbours but not reachable via lane change)
-    * `succeeding` (relation between two subsequent lanelets)
-    * `conflicting` (intersecting lanelets/areas)
-    * `area` (reachable area to lanelet/area relation)
+### Using Docker
 
-## Route vs Path vs Sequence
-When querying data in the routing graph, you will come across the terms _route_, _path_ and _sequence_. In contrast to a simple set of lanelets (data-wise a vector of lanelets), they have a special meaning and are data-wise different classes.
-
-A *route* means all the lanelets that can be used to a destination without driving a different road. They can be connected by a generic sequence of lane changes and successors.
-
-A *path* (LaneletPath or LaneletOrAreaPath) is an ordered list of Lanelets/Areas that lead to the destination. They can be connected by lane changes.
-
-A *sequence* (LaneletSequence) is a sequence of subsequent Lanelets that is not separated by a lane change (think of it as a _lane_). It does not necessary lead to a destination, instead it ends when a lane change is required. In the example image, the lanelets A, D, B form a valid _sequence_ (and also a valid _path_), while the lanelets A, D, E are a valid _path_, but not a valid _sequence_.
-
-![](doc/images/shortest_path_and_route.png)
-
-# 2. Code Usage
-
-## Create a Routing Graph
-
-```cpp
-using namespace lanelet;
-
-// Load a map
-LaneletMapPtr map = load("map.osm", Origin({49, 8})); // origin has to be close to the map data in lat/lon coordinates
-
-// Initialize traffic rules
-TrafficRulesPtr trafficRules{TrafficRulesFactory::instance().create(Locations::Germany, Participants::Vehicle)};
-
-// Optional: Initalize routing costs
-double laneChangeCost = 2;
-RoutingCostPtrs costPtrs{std::make_shared<RoutingCostDistance>(laneChangeCost)};
-
-// Optional: Initialize config for routing graph:
-RoutingGraph::Configuration routingGraphConf;
-routingGraphConf.emplace(std::make_pair(RoutingGraph::ParticipantHeight, Attribute("2.")));
-
-// Create routing graph
-RoutingGraphPtr graph = RoutingGraph::build(map, trafficRules /*, costPtrs, routingGraphConf*/);
-```
-- The traffic rules object represents the view from which the map will be interpreted. Doing routing with vehicle traffic
-rules will yield different results than routing with e.g. bicycle traffic rules.
-- Routing for bicycles might include lanelets that are not available to (motorized)vehicles and vice versa.
-
-The python interface works similarly:
-```python
-import lanelet2
-map = lanelet2.io.load("map.osm", lanelet2.io.Origin(49, 8))
-trafficRules = lanelet2.traffic_rules.create(lanelet2.traffic_rules.Locations.Germany, lanelet2.traffic_rules.Participants.Vehicle)
-graph = lanelet2.routing.RoutingGraph(map, trafficRules)
-```
-## Get a shortest path
-
-```cpp
-Optional<routing::LaneletPath> shortestPath = graph->shortestPath(fromLanelet, toLanelet);
-```
-* `Optional` will be uninitialized (false) if there's no path
-* there's also `shortestPathWithVia`
-
-in python:
-```python
-shortestPath = graph.shortestPath(fromLanelet, toLanelet)
-```
-In python, shortestPath simply returns `None` if there is no path.
-
-## Get and write a route
-
-```cpp
-    Optional<Route> route = graph->getRoute(fromLanelet, toLanelet, routingCostId);
-    if (route) {
-        LaneletSubmapConstPtr routeMap = route->laneletSubmap();
-        write("route.osm", *routeMap->laneletMap(), Origin({49, 8}));
-    }
-```
-* `Optional` will be uninitialized (false) if there's no route
-
-Note that there is a semantic difference between a `LaneletSubmap` and a `LaneletMap`. While a LaneletSubmap only contains
-the things you explicitly added, the `LaneletMap` also contains all the things referred by them (the Points, Linestrings, things referred by RegulatoryElements).
-The `LaneletSubmap` in this case only contains the Lanelets of the route. But since this is not sufficient for writing, you need to transform it into a regular `LaneletMap` first.
-
-The written map will therefore not only contain the Lanelets but also their RegulatoryElements.
-If these RegulatoryElements contain other Lanelets, these Lanelets will be part of the written map as well, even if they are not on the route.
-
-in python:
-```python
-route = graph.getRoute(fromLanelet, toLanelet, routingCostId)
-if route:
-    laneletSubmap = route.laneletSubmap()
-    lanelet2.io.write("route.osm", laneletSubmap.laneletMap(), lanelet2.io.Origin(49, 8)))
-```
-
-## Get a reachable set of lanelets
-
-```cpp
-double maxRoutingCost{100};
-ConstLanelets reachableSet = graph->reachableSet(lanelet, maxRoutingCost, routingCostId);
-```
-
-## Left, Right, Following Lanelets
-
-```cpp
-// Get routable left lanelet if it exists
-Optional<ConstLanelet> left{graph->left(fromLanelet)};
-// Get non-routable left lanelet if it exists
-Optional<ConstLanelet> adjacentLeft{graph->adjacentLeft(fromLanelet)};
-// Get following lanelets
-ConstLanelets following{graph->following(fromLanelet)};
-```
-* Also available: `right`, `adjacentRight`, `lefts`, `rights`, `conflicting`
-
-Alternatively:
- or queries that return relations:
-```cpp
-// Get relations to all left lanelets
-LaneletRelations leftRelations = graph->leftRelations(
-                                                fromLanelet);
-```
-There's `leftRelations` that returns a vector of pairs of LaneletRelations whereas RelationType can be 'left' or 'adjacentLeft' in this case
-
-## More
-
-This is just a quick walkthrough. Advanced examples can be found in [lanelet2_examples](../lanelet2_examples/README.md).
-
-# 3. Export and Debugging Routing Graphs
-
-![](doc/images/lanelet_map_routing_graph.png)
-
-## LaneletMap with Routing Information
-
-```cpp
-LaneletMapConstPtr debugLaneletMap = graph->getDebugLaneletMap(RoutingCostId(0));
-write(std::string("routing_graph.osm"), *debugLaneletMap);
-```
-This one is best viewed in [JOSM](https://josm.openstreetmap.de/) and using a custom map style css which is to be found in `res/routing.mapcss`. [This gif](https://josm.openstreetmap.de/attachment/wiki/Styles/addstyle.gif) shows, how to add a style to JOSM, except that one needs to press the `+` button in the configuration menu and specify the file.
-
-Most of the information is to be found in the attributes. The line strings that connect lanelets do have a direction. The name of the forth-direction is generally to be found left/above the line and the reverse relation right/under the string.
-
-## DOT (GraphViz) and GraphML (xml-based) file export
-
-```cpp
-graph->exportGraphViz("~/graph.gv");
-graph->exportGraphML("~/graph.graphml");
-```
-These can then be viewed with a graph viewer like [Gephi](https://gephi.org/). The downside compared to the laneletMap export is, that the lanelets aren't localized.
-
-# 4. Routes
-
-Example route through `Oststadtkreisel`:
-
-![](doc/images/lanelet_map_route_oststadtkreisel_small.jpg)
-
-
-Output of `getDebugLaneletMap()` function:
-
-![](doc/images/lanelet_map_route.png)
-
-## Example Relational Queries on Routes:
-
-```cpp
-// Get left lanelet of example lanelet 'll'
-Optional<ConstLaneletRelation> left = route->leftRelation(ll);
-// Get conflicting lanelets of 'll'
-ConstLanelets conflicting = route->conflictingInRoute(ll);
+There is a Docker container from which you can test things out:
 
 ```
-Note that a route just returns relations to lanelets that can be used to reach the goal.
-## Other example queries:
-
-```cpp
-// Get underlying shortest path
-Optional<routing::LaneletPath> shortestPath = route->shortestPath();
-// Get the full lane of a given lanelet 'll'
-LaneletSequence fullLane = route->fullLane(ll);
-// Get remaining lane of a given lanelet 'll'
-LaneletSequence remainingLane = route->remainingLane(ll);
+docker build -t lanelet2 .                    # builds a docker image named "lanelet2"
+docker run -it --rm lanelet2:latest /bin/bash # starts the docker image
+python -c "import lanelet2"                   # quick check to see everything is fine
 ```
 
-# 5. Interconnect Routing Graphs of Different Participants
-A `RoutingGraphContainer` can be used to *connect* graphs of different participants to get information about conflicting lanelets.
-## Create a RoutingGraphContainer
+The docker image contains a link to your local lanelet2, so you can work and see changes (almost) at the same time. Work with two screens, one local and one on docker. Make your code changes locally, then run again `catkin build` on docker to recompile the code (update python modules).
 
-```cpp
-std::vector<RoutingGraphPtr> graphs;
-graphs.emplace_back(vehicleGraphLaneletMap);
-graphs.emplace_back(pedestrianGraphLaneletMap);
-RoutingGraphContainer container(graphs);
+### Manual installation
+
+In case you want to build it in your own way (without the above Docker image) use these instructions.
+
+Lanelet2 relies mainly on [Catkin](https://catkin-tools.readthedocs.io/en/latest/index.html) for building and is targeted towards Linux.
+
+At least **C++14** is required.
+
+### Dependencies
+Besides [Catkin](https://catkin-tools.readthedocs.io/en/latest/index.html), the dependencies are
+* `Boost` (from 1.58)
+* `eigen3`
+* [`mrt_cmake_modules`](https://github.com/KIT-MRT/mrt_cmake_modules), a CMake helper library
+* `pugixml` (for lanelet2_io)
+* `boost-python, python2 or python3` (for lanelet2_python)
+* `geographiclib` (for lanelet2_projection)
+* `rosbash` (for lanelet2_examples)
+
+For Ubuntu, the steps are the following:
+* [Set up ROS](http://wiki.ros.org/ROS/Installation), and install at least `rospack`, `catkin` and `mrt_cmake_modules` (e.g. `ros-melodic-rospack`, `ros-melodic-catkin`, `ros-melodic-mrt-cmake-modules`):
 ```
-## Example Queries
-The last parameter *participantHeight* is optional and decides whether conflicting lanelets are determined in 2D or 3D.
-
-### Query for a single lanelet
-
-```cpp
-double heightClearance{4.}; // Height of the traffic participant
-// Query a single graph for conflicting lanelets
-size_t routingGraphId{0};   // E.g. 0 for the first graph
-ConstLanelets conflictingVehicle{container->conflictingInGraph(bridgeLanelet, routingGraphId, heightClearance)};
-// Query all graphs for conflicting lanelets
-RoutingGraphContainer::ConflictingInGraphs conflicting{container->conflictingInGraphs(bridgeLanelet, heightClearance)};
+sudo apt-get install ros-melodic-rospack ros-melodic-catkin ros-melodic-mrt-cmake-modules
 ```
 
-### Query for a Whole Route
-
-```cpp
-// Conflicting lanelets of a route in a single graph
-ConstLanelets conflictingVehicle{container->conflictingOfRouteInGraph(routePtr, routingGraphId)};
-// Conflicting lanelets of a route in all graphs
-RoutingGraphContainer::ConflictingInGraphs result{container->conflictingOfRouteInGraphs(routePtr, heightClearance)};
+* Install the dependencies above:
+```bash
+sudo apt-get install libboost-dev libeigen3-dev libgeographic-dev libpugixml-dev libpython-dev libboost-python-dev python-catkin-tools
 ```
+
+**On 16.04 and below**, `mrt_cmake_modules` is not available in ROS and you have to clone it into your workspace (`git clone https://github.com/KIT-MRT/mrt_cmake_modules.git`).
+
+### Building
+As usual with Catkin, after you have sourced the ros installation, you have to create a workspace and clone all required packages there. Then you can build.
+```shell
+source /opt/ros/$ROS_DISTRO/setup.bash
+mkdir catkin_ws && cd catkin_ws && mkdir src
+catkin init
+catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo # build in release mode (or whatever you prefer)
+cd src
+git clone https://github.com/fzi-forschungszentrum-informatik/lanelet2.git
+cd ..
+catkin build
+```
+
+If unsure, see the [Dockerfile](Dockerfile) or the [travis build log](https://travis-ci.org/fzi-forschungszentrum-informatik/Lanelet2). It shows the the full installation process, with subsequent build and test based on a docker image with a clean ubuntu installation.
+
+### Manual, experimental installation using conan
+For non-catkin users, we also offer a conan based install proces. Its experimental and might not work on all platforms, expecially Windows.
+Since conan handles installing all the dependencies, all you need is a cloned repository and conan itself:
+```bash
+pip install conan catkin_pkg
+conan remote add bincrafters https://api.bintray.com/conan/bincrafters/public-conan # requried for python bindings
+git clone https://github.com/fzi-forschungszentrum-informatik/lanelet2.git
+cd lanelet2
+```
+
+From here, just use the default conan build/install procedure, e.g.:
+```bash
+conan source .
+conan create . lanelet2/stable --build=missing --options shared=True
+```
+The `shared=True` part is important, because otherwise the lanelet2's plugin mechanisms will fail. E.g. loading maps will not be possible.
+
+To be able to use the python bindings, you have to make conan export the PYTHONPATH for lanelet2:
+```bash
+conan install lanelet2/0.0.0@lanelet2/stable --build=missing -g virtualenv # replace 0.0.0 with the version shown by conan
+source activate.sh
+python -c "import lanelet2" # or whatever you want to do
+source deactivate.sh
+```
+
+### Python3
+
+The python bindings are build for your default python installation by default (which currently is python2 on most systems). To build for python3 instead of python2, create a python3 virtualenv before initializing the workspace with `catkin init`. The command `python` should point to `python3`. 
+
+After `catkin init` run `catkin config --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DPYTHON_VERSION=3.6` to make sure that the correct python version is used. Then build and use as usual.
+
+*Note: With bionic and beyond, the apt package `python3-catkin-tools` conflicts with ROS melodic and should not be used. Use either the python2 version or use pip to install the python3 version.*
+
+## Examples
+Examples and common use cases in both C++ and Python can be found [here](lanelet2_examples/README.md).
+
+## Packages
+* **lanelet2** is the meta-package for the whole lanelet2 framework
+* **lanelet2_core** implements the basic library with all the primitives, geometry calculations and the LanletMap object
+* **lanelet2_io** is responsible for reading and writing lanelet maps
+* **lanelet2_traffic_rules** provides support to interpret the traffic rules encoded in a map
+* **lanelet2_projection** for projecting maps from WGS84 (lat/lon) to local metric coordinates
+* **lanelet2_routing** implements the routing graph for routing or reachable set or queries as well as collision checking
+* **lanelet2_maps** provides example maps and functionality to visualize and modify them easily in JOSM
+* **lanelet2_python** implements the python interface for lanelet2
+* **lanelet2_validation** provides checks to ensure a valid lanelet2 map
+* **lanelet2_examples** contains tutorials for working with Lanelet2 in C++ and Python
+
+## Citation
+
+If you are using Lanelet2 for scientific research, we would be pleased if you would cite our [publication](http://www.mrt.kit.edu/z/publ/download/2018/Poggenhans2018Lanelet2.pdf):
+```latex
+@inproceedings{poggenhans2018lanelet2,
+  title     = {Lanelet2: A High-Definition Map Framework for the Future of Automated Driving},
+  author    = {Poggenhans, Fabian and Pauls, Jan-Hendrik and Janosovits, Johannes and Orf, Stefan and Naumann, Maximilian and Kuhnt, Florian and Mayr, Matthias},
+  booktitle = {Proc.\ IEEE Intell.\ Trans.\ Syst.\ Conf.},
+  year      = {2018},
+  address   = {Hawaii, USA},
+  owner     = {poggenhans},
+  month     = {November},
+  Url={http://www.mrt.kit.edu/z/publ/download/2018/Poggenhans2018Lanelet2.pdf}
+}
+```
+
+
